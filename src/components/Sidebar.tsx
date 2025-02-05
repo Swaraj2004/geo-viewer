@@ -103,22 +103,21 @@ const Sidebar = ({ fileLayers, setFileLayers }: FileLayersStateProps) => {
           }
         });
 
+        // Sort unique values alphabetically
+        const sortedValues = Array.from(uniqueValues).sort((a, b) =>
+          a.localeCompare(b)
+        );
+
         // Create a new GeoJSON (MultiPolygon) merging features by property.
-        const newFeatures = Object.keys(groupedByProperty).map((key) => {
+        const newFeatures = sortedValues.map((key) => {
           const mergedCoordinates = groupedByProperty[key].reduce(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (acc: any[], feature: GeoJSONFeature) => {
-              // Handle Polygon geometries.
               if (feature.geometry.type === "Polygon") {
-                // For Polygon, the coordinates are already nested correctly.
                 return [...acc, feature.geometry.coordinates];
-              }
-              // Handle MultiPolygon geometries (if any).
-              else if (feature.geometry.type === "MultiPolygon") {
-                // For MultiPolygon, flatten the coordinates into a single array.
+              } else if (feature.geometry.type === "MultiPolygon") {
                 return [...acc, ...feature.geometry.coordinates];
               }
-              // Ignore other geometry types (e.g., Point, LineString).
               return acc;
             },
             []
@@ -140,14 +139,14 @@ const Sidebar = ({ fileLayers, setFileLayers }: FileLayersStateProps) => {
         };
 
         const splitVisibleFeatures: { [key: string]: boolean } = {};
-        uniqueValues.forEach((val) => {
+        sortedValues.forEach((val) => {
           splitVisibleFeatures[val] = true;
         });
 
         return {
           ...fl,
           splitGeoJsonData,
-          splitValues: Array.from(uniqueValues),
+          splitValues: sortedValues,
           splitVisibleFeatures,
         };
       })
